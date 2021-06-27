@@ -64,5 +64,14 @@
     "lodash": "^4.17.21",
     "tinycolor2": "^1.4.2",
     "two.js": "^0.7.5"
-  }
+  },
+  "directories": {
+    "example": "examples"
+  },
+  "keywords": [
+    "art",
+    "generate",
+    "mondrian",
+    "generative"
+  ]
 }
