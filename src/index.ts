@@ -1,10 +1,9 @@
-import generator from "./generator";
-import render from "./render";
-import {IMondrian, Item, MondrianArtConfig} from "./types";
+import generator from './generator';
+import render from './render';
+import {IMondrian, Item, MondrianArtConfig} from './types';
 // @ts-ignore
-import Two from "two.js";
-import animate from "./animate";
-
+import Two from 'two.js';
+import animate from './animate';
 
 class Mondrian implements IMondrian {
   config;
@@ -42,11 +41,11 @@ class Mondrian implements IMondrian {
       width: config.width,
       height: config.height,
       title: config.mondrian?.title,
-      backgroundColor: config.mondrian?.backgroundColor,
+      backgroundColor: config.mondrian?.backgroundColor
     });
 
     // 3. Animate if enable,
-    if(config.enableAnimation){
+    if (config.enableAnimation) {
       this.anime = animate(items);
     }
   }

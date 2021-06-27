@@ -1,7 +1,6 @@
 import anime from 'animejs/lib/anime.es.js';
-import {Item, ItemType} from "./types";
-import {RN} from "./utils";
-
+import {Item, ItemType} from './types';
+import {RN} from './utils';
 
 const animate = (items: Item[]) => {
   const animation: any = [];
@@ -12,22 +11,22 @@ const animate = (items: Item[]) => {
       x: RN(-700, 700),
       y: RN(-700, 700),
       rotation: 2.5,
-      target: item.target,
+      target: item.target
     };
     animation.push(anim);
     item.target.translation.x = anim.x;
     item.target.translation.y = anim.y;
-  })
+  });
 
   // Animate polygons
   items.filter(a => a.type === ItemType.polygon).forEach(item => {
     const anim = {
       opacity: 0,
-      target: item.target,
+      target: item.target
     };
     animation.push(anim);
     item.target.opacity = 0;
-  })
+  });
 
   // TODO Keyframes to gen
   return anime({
@@ -46,15 +45,18 @@ const animate = (items: Item[]) => {
     easing: 'linear',
     update: () => {
       animation.forEach(anim => {
-        anim.x ? anim.target.translation.x = anim.x : null;
-        anim.y ? anim.target.translation.y = anim.y : null;
-        anim.opacity ? anim.target.opacity = anim.opacity : null;
-      })
-    },
-    complete: (anim) => {
-
+        if (anim.x) {
+          anim.target.translation.x = anim.x;
+        }
+        if (anim.y) {
+          anim.target.translation.y = anim.y;
+        }
+        if (anim.opacity) {
+          anim.target.opacity = anim.opacity;
+        }
+      });
     }
   });
-}
+};
 
 export default animate;
