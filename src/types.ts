@@ -3,6 +3,7 @@ export interface ConfigMondrian {
   palette?: string[];
   style?: 'neo' | 'classic' | 'random'; // Shapes (?)
   enableGradient?: boolean;
+  enableSnaking?: boolean;
   lineWidth?: 1 | 2.5 | 5 | number | 'random';
   title?: string; // Default - Piet Mondrian
   backgroundColor?: string;

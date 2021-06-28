@@ -16,7 +16,7 @@ function App() {
       label: "animation",
     },
   });
-  const { style, enableGradient, backgroundColor, color1, color2, color3, lineWidth, title } =
+  const { style, enableGradient, enableSnaking, backgroundColor, color1, color2, color3, lineWidth, title } =
     useControls("Mondrian",
     {
       style: {
@@ -52,6 +52,10 @@ function App() {
         value: false,
         label: 'gradient'
       },
+      enableSnaking: {
+        value: false,
+        label: 'snaking'
+      },
       backgroundColor: {
         value: "#fff",
         label: "background"
@@ -66,6 +70,7 @@ function App() {
     style: "neo" | "classic" | "random",
     backgroundColor?: string,
     enableGradient?: boolean,
+    enableSnaking?: boolean,
     color1: string, color2: string, color3: string, lineWidth?: number, title?: string,
   };
 
@@ -79,6 +84,7 @@ function App() {
         palette: [color1, color2, 'transparent', color3, 'transparent', 'transparent'],
         style,
         enableGradient,
+        enableSnaking,
         lineWidth: lineWidth === 0 ? "random" : lineWidth,
         title,
         backgroundColor,
@@ -100,7 +106,7 @@ function App() {
       mondrian?.generate();
     }
   }, [
-    width, height, enableAnimation, enableGradient, style,
+    width, height, enableSnaking, enableAnimation, enableGradient, style,
     backgroundColor, color1, color2, color3, lineWidth, title,
   ]);
 

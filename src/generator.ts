@@ -8,7 +8,6 @@ const tinycolor  = require('tinycolor2');
 const lodash  = require('lodash');
 const shuffle = lodash.shuffle;
 
-
 export default (config: MondrianArtConfig): Item[] => {
   const width = config.width || 500;
   const height = config.height || 500;
@@ -17,7 +16,7 @@ export default (config: MondrianArtConfig): Item[] => {
   const enableAnimation = config.enableAnimation || true;
   const backgroundColor = config.mondrian?.backgroundColor || '#fff';
   const enableGradient = config.mondrian?.enableGradient || false;
-  const palette = config.mondrian?.palette || ['#0e448c', '#f61710', '#fff', '#ffd313', '#fff', '#fff'];
+  const palette = config.mondrian?.palette || ['#0e448c', '#f61710', 'transparent', '#ffd313', 'transparent'];
 
   if (style === 'random') {
     style = shuffle(['neo', 'classic'])[0];
@@ -52,7 +51,7 @@ export default (config: MondrianArtConfig): Item[] => {
     items.push({
       type: ItemType.polygon,
       points: polygon,
-      gradient: enableGradient ? gradient(shuffle(palette)[0]) : undefined,
+      gradient: enableGradient ? gradient(shuffle(palette)[0], height) : undefined,
       fill: shuffle(palette)[0],
       target: null
     });
@@ -62,8 +61,9 @@ export default (config: MondrianArtConfig): Item[] => {
 };
 
 const neoGenerator = (width: number, height: number): GeneratorData => {
-  const w = RN(50, width - 100); // TODO Percent max available
-  const h = RN(50, height - 80);
+  const maxValue = Math.floor((width > height ? width : height) / 100 * 30);
+  const w = RN(30, width - Math.floor(width / 100 * 10));
+  const h = RN(30, height - Math.floor(height / 100 * 10));
   const r = {
     x: (width - w) / 2,
     y: (height - h) / 2,
@@ -71,15 +71,18 @@ const neoGenerator = (width: number, height: number): GeneratorData => {
     h: h
   };
   const lines: number[][] = [];
-  const skew = RN(1, 5) === 1;
+  const skew = RN(1, 5) === 3;
   const skewX = skew ? RN(-20, 20) : 0;
   const skewY = skew ? RN(-20, 20) : 0;
+  const isAdd = !(RN(1, 5) === 3);
 
   const genExtraDots = (points: TPoint[]): TPoint[] => {
     const extra_points: TPoint[] = [];
     points.slice(0, 2).forEach((point, i) => {
-      const dot1 = RN(-100, 100);
-      const dot2 = RN(-100, 100);
+      const dot1 = isAdd ? RN(-maxValue, maxValue) : RN(-maxValue / 2, maxValue / 2);
+      const dot2 = isAdd ? RN(-maxValue, maxValue) : -dot1;
+      const dot3 = isAdd ? RN(-maxValue, maxValue) : RN(-maxValue / 2, maxValue / 2);
+      const dot4 = isAdd ? RN(-maxValue, maxValue) : -dot3;
 
       const { x, y, toIdx } = point;
       const { x: x1, y: y1 } = points[toIdx || 0];
@@ -107,15 +110,15 @@ const neoGenerator = (width: number, height: number): GeneratorData => {
       if (i === RN(1, 2)) {
         extra_points.push(...[
           {
-            x: ((x2 + x21) / 2) - 60 * Math.cos(angle2), // RN(-100, 100)
-            y: ((y2 + y21) / 2) - 60 * Math.sin(angle2),
+            x: ((x2 + x21) / 2) - dot3 * Math.cos(angle2), // RN(-100, 100)
+            y: ((y2 + y21) / 2) - dot3 * Math.sin(angle2),
             toIdx: points.length + extra_points.length + 1,
             line0: 0,
             line1: 1
           },
           {
-            x: ((x + x1) / 2) - -60 * Math.cos(angle),
-            y: ((y + y1) / 2) - -60 * Math.sin(angle),
+            x: ((x + x1) / 2) - dot4 * Math.cos(angle),
+            y: ((y + y1) / 2) - dot4 * Math.sin(angle),
             line0: 0,
             line1: 1
           }
@@ -170,7 +173,7 @@ const neoGenerator = (width: number, height: number): GeneratorData => {
   dots
     .filter(a => a.toIdx !== undefined)
     .forEach((point, i) => {
-      const adding = RN(40, 120);
+      const adding = isAdd ? RN(10, maxValue) : 0;
       const { x, y, toIdx } = point;
       const { x: x1, y: y1 } = dots[toIdx === undefined ? 0 : toIdx];
       const angle = Math.atan2(y1 - y, x1 - x);
@@ -263,7 +266,6 @@ const neoGenerator = (width: number, height: number): GeneratorData => {
     edg.forEach(e => {
       addEdge(e[0] === 0 ? hack : e[0], e[1] === 0 ? hack : e[1]);
     });
-    // console.log("graph", graph1.slice(0, 10))
 
     const color = new Array(N).fill(Boolean).map(a => 0);
     const par = new Array(N).fill(Boolean).map(a => 0);
@@ -358,8 +360,8 @@ const classicGenerator = (width: number, height: number): GeneratorData => {
 
   const grid = () => {
     // TODO Set config, size
-    const col = Math.floor((width) / 70);
-    const row = Math.floor((height) / 70);
+    const col = Math.floor((width) / Math.floor(width / 100 * 15));
+    const row = Math.floor((height) / Math.floor(height / 100 * 15));
 
     const matrix = Array(row).fill(0).map(() => Array(col).fill(0));
     let curRow = 0;

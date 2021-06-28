@@ -1,4 +1,5 @@
 import { Item, ItemType, RenderConfig } from './types';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import Two from 'two.js';
 const tinycolor  = require('tinycolor2');
@@ -14,6 +15,7 @@ const render = (api: any, config: RenderConfig): void => {
 
   // Set background
   const bg = api.makeRectangle(width / 2, height / 2, width, height);
+  bg.noStroke();
   bg.fill = bgColor;
 
   items
@@ -59,6 +61,12 @@ const render = (api: any, config: RenderConfig): void => {
       textY += 20;
     });
   }
+
+  // Set border
+  const border = api.makeRectangle(width / 2, height / 2, width, height);
+  border.stroke = tinycolor.isReadable(bgColor, '#fff') ? '#fff' : '#000'; // bgColor;
+  border.linewidth = 5;
+  border.noFill();
 
   api.bind('update', function() {/**/});
 };

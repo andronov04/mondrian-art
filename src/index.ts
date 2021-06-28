@@ -1,9 +1,11 @@
 import generator from './generator';
 import render from './render';
-import {IMondrian, Item, MondrianArtConfig} from './types';
+import {IMondrian, Item, ItemType, MondrianArtConfig} from './types';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import Two from 'two.js';
 import animate from './animate';
+import { RN } from './utils';
 
 class Mondrian implements IMondrian {
   config;
@@ -22,14 +24,14 @@ class Mondrian implements IMondrian {
     this.api.appendTo(this.config.container);
   }
 
-  reconfigure = (config: MondrianArtConfig) => {
+  reconfigure = (config: MondrianArtConfig): void => {
     this.config = config;
 
     this.api.clear();
     this.api.renderer.setSize(this.config.width, this.config.height, this.api.ratio);
   }
 
-  generate = () => {
+  generate = (): void => {
     const config = this.config;
     // 1. Generate lines and polygons. Grid.
     const items: Item[] = generator(config);
@@ -44,13 +46,20 @@ class Mondrian implements IMondrian {
       backgroundColor: config.mondrian?.backgroundColor
     });
 
-    // 3. Animate if enable,
+    // 3. Snaking if enable
+    if (config.mondrian?.enableSnaking) {
+      items.filter(a => a.type === ItemType.line).forEach(item => {
+        item.target.translation.x = RN(-8, 8);
+        item.target.translation.y = RN(-8, 8);
+      });
+    }
+    // 4. Animate if enable,
     if (config.enableAnimation) {
-      this.anime = animate(items);
+      this.anime = animate(items, config.mondrian?.enableSnaking);
     }
   }
 
-  play = () => {
+  play = (): void => {
     this.anime?.restart();
   }
 }

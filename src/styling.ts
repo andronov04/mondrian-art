@@ -3,7 +3,7 @@ import { RN } from './utils';
 const tinycolor  = require('tinycolor2');
 const lodash  = require('lodash');
 
-export const gradient = (color: string): ItemGradient => {
+export const gradient = (color: string, height: number): ItemGradient => {
   const color1 = tinycolor(color);
   let colors = color1.triad();
   if (RN(0, 4) === 0) {
@@ -21,9 +21,9 @@ export const gradient = (color: string): ItemGradient => {
   const color2 = lodash.shuffle(colors)[0].toHexString();
   return {
     x1: 0,
-    y1: 500,
+    y1: height,
     x2: 0,
-    y2: 500,
+    y2: height,
     stops: [
       color === 'transparent' ? 'transparent' : color1.toHexString(),
       color === 'transparent' ? 'transparent' : color2
