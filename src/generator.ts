@@ -13,7 +13,6 @@ export default (config: MondrianArtConfig): Item[] => {
   const height = config.height || 500;
   let style = config.mondrian?.style || 'random';
   const lineWidth = config.mondrian?.lineWidth || 1;
-  const enableAnimation = config.enableAnimation || true;
   const backgroundColor = config.mondrian?.backgroundColor || '#fff';
   const enableGradient = config.mondrian?.enableGradient || false;
   const palette = config.mondrian?.palette || ['#0e448c', '#f61710', 'transparent', '#ffd313', 'transparent'];

@@ -45,6 +45,7 @@ export interface MondrianArtConfig {
   width?: number;
   height?: number;
   enableAnimation?: boolean;
+  mode?: "svg" | "canvas";
   container?: HTMLElement | null;
 }
 

@@ -13,10 +13,11 @@ class Mondrian implements IMondrian {
   anime;
   constructor(config: MondrianArtConfig) {
     this.config = config;
+    const mode = config.mode || 'svg';
 
     // Init render Engine
     this.api = new Two({
-      type: Two.Types.svg,
+      type: mode === 'svg' ? Two.Types.svg : Two.Types.canvas,
       width: this.config.width,
       height: this.config.height,
       autostart: true
