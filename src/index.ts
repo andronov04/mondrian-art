@@ -58,6 +58,9 @@ class Mondrian implements IMondrian {
     if (config.enableAnimation) {
       this.anime = animate(items, config.mondrian?.enableSnaking);
     }
+    // Ugly hack for tests
+    // @ts-ignore
+    this.items = items;
   }
 
   play = (): void => {

@@ -42,8 +42,8 @@ const render = (api: any, config: RenderConfig): void => {
       const line = api.makeLine(item.points[0], item.points[1], item.points[2], item.points[3]);
       line.linewidth = item.strokeWidth;
       line.stroke = item.fill;
-      line.cap = 'butt';
-      line.join = 'bevel';
+      line.cap = 'square';
+      line.join = 'miter';
       item.target = line;
     });
 

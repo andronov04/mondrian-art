@@ -30,8 +30,9 @@ const animate = (items: Item[], snaking = false): any => {
     item.target.opacity = 0;
   });
 
-  // TODO Keyframes to gen
-  return anime({
+  const copy_animation = animation.map(a => {return {...a, target: a.target?.id}});
+
+  const anim = anime({
     targets: animation,
     x: [
       { value: snaking ? RN(-8, 8) : 0, duration: 1500, delay: 0 }
@@ -65,6 +66,12 @@ const animate = (items: Item[], snaking = false): any => {
       });
     }
   });
+
+  // Ugly hack for tests
+  anim.items = items;
+  anim.animation = copy_animation;
+
+  return anim
 };
 
 export default animate;
