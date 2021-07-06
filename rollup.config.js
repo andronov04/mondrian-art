@@ -2,6 +2,7 @@ import path from 'path'
 import babel from '@rollup/plugin-babel'
 import resolve from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
+import commonjs from '@rollup/plugin-commonjs'
 import { uglify } from "rollup-plugin-uglify"
 import esbuild from 'rollup-plugin-esbuild'
 import { sizeSnapshot } from 'rollup-plugin-size-snapshot'
@@ -12,7 +13,7 @@ const { root } = path.parse(process.cwd())
 
 function external(id) {
   return (
-    id.startsWith('./vanilla') || (!id.startsWith('.') && !id.startsWith(root))
+    id.startsWith('./vanilla') || (!id.startsWith('.') && !id.startsWith(root)) || id.startsWith('tinycolor2') || id.startsWith('lodash')
   )
 }
 
@@ -64,6 +65,7 @@ function createCommonJSConfig(input, output) {
     external,
     plugins: [
       resolve({ extensions }),
+      commonjs(),
       babel(getBabelOptions({ ie: 11 })),
       sizeSnapshot(),
     ],
@@ -81,6 +83,7 @@ function createMinJSConfig(input, output) {
         main: true,
         browser: true,
       }),
+      commonjs(),
       babel(getBabelOptions({ ie: 11 })),
       uglify(),
     ],

@@ -1,12 +1,11 @@
 import {Graph} from './graph';
 import {MondrianArtConfig, GeneratorData, Item, ItemType, TPoint} from './types';
-import {RN} from './utils';
+import { RC, RGN } from './utils';
 import {gradient} from './styling';
 
-const isect = require('isect');
-const tinycolor  = require('tinycolor2');
-const lodash  = require('lodash');
-const shuffle = lodash.shuffle;
+import * as isect from 'isect';
+import * as tinycolor_ from 'tinycolor2';
+const tinycolor = tinycolor_;
 
 export default (config: MondrianArtConfig): Item[] => {
   const width = config.width || 500;
@@ -18,7 +17,7 @@ export default (config: MondrianArtConfig): Item[] => {
   const palette = config.mondrian?.palette || ['#0e448c', '#f61710', 'transparent', '#ffd313', 'transparent'];
 
   if (style === 'random') {
-    style = shuffle(['neo', 'classic'])[0];
+    style = RC(['neo', 'classic']);
   }
 
   // 1. Generate lines and polygons (rects). Default it's random
@@ -41,7 +40,7 @@ export default (config: MondrianArtConfig): Item[] => {
       type: ItemType.line,
       points: line,
       fill:  tinycolor.isReadable(backgroundColor, '#fff') ? '#fff' : '#000',
-      strokeWidth: lineWidth === 'random' ? RN(0.5, 4) : lineWidth,
+      strokeWidth: lineWidth === 'random' ? RGN(0.5, 4) : lineWidth,
       target: null
     });
   });
@@ -50,8 +49,8 @@ export default (config: MondrianArtConfig): Item[] => {
     items.push({
       type: ItemType.polygon,
       points: polygon,
-      gradient: enableGradient ? gradient(shuffle(palette)[0], height) : undefined,
-      fill: shuffle(palette)[0],
+      gradient: enableGradient ? gradient(RC(palette), height) : undefined,
+      fill: RC(palette),
       target: null
     });
   });
@@ -61,8 +60,8 @@ export default (config: MondrianArtConfig): Item[] => {
 
 const neoGenerator = (width: number, height: number): GeneratorData => {
   const maxValue = Math.floor((width > height ? width : height) / 100 * 30);
-  const w = RN(30, width - Math.floor(width / 100 * 10));
-  const h = RN(30, height - Math.floor(height / 100 * 10));
+  const w = RGN(30, width - Math.floor(width / 100 * 10));
+  const h = RGN(30, height - Math.floor(height / 100 * 10));
   const r = {
     x: (width - w) / 2,
     y: (height - h) / 2,
@@ -70,18 +69,18 @@ const neoGenerator = (width: number, height: number): GeneratorData => {
     h: h
   };
   const lines: number[][] = [];
-  const skew = RN(1, 5) === 3;
-  const skewX = skew ? RN(-20, 20) : 0;
-  const skewY = skew ? RN(-20, 20) : 0;
-  const isAdd = !(RN(1, 5) === 3);
+  const skew = RGN(1, 5) === 3;
+  const skewX = skew ? RGN(-20, 20) : 0;
+  const skewY = skew ? RGN(-20, 20) : 0;
+  const isAdd = !(RGN(1, 5) === 3);
 
   const genExtraDots = (points: TPoint[]): TPoint[] => {
     const extra_points: TPoint[] = [];
     points.slice(0, 2).forEach((point, i) => {
-      const dot1 = isAdd ? RN(-maxValue, maxValue) : RN(-maxValue / 2, maxValue / 2);
-      const dot2 = isAdd ? RN(-maxValue, maxValue) : -dot1;
-      const dot3 = isAdd ? RN(-maxValue, maxValue) : RN(-maxValue / 2, maxValue / 2);
-      const dot4 = isAdd ? RN(-maxValue, maxValue) : -dot3;
+      const dot1 = isAdd ? RGN(-maxValue, maxValue) : RGN(-maxValue / 2, maxValue / 2);
+      const dot2 = isAdd ? RGN(-maxValue, maxValue) : -dot1;
+      const dot3 = isAdd ? RGN(-maxValue, maxValue) : RGN(-maxValue / 2, maxValue / 2);
+      const dot4 = isAdd ? RGN(-maxValue, maxValue) : -dot3;
 
       const { x, y, toIdx } = point;
       const { x: x1, y: y1 } = points[toIdx || 0];
@@ -106,7 +105,7 @@ const neoGenerator = (width: number, height: number): GeneratorData => {
           line1: 1
         }
       ]);
-      if (i === RN(1, 2)) {
+      if (i === RGN(1, 2)) {
         extra_points.push(...[
           {
             x: ((x2 + x21) / 2) - dot3 * Math.cos(angle2), // RN(-100, 100)
@@ -172,7 +171,7 @@ const neoGenerator = (width: number, height: number): GeneratorData => {
   dots
     .filter(a => a.toIdx !== undefined)
     .forEach((point, i) => {
-      const adding = isAdd ? RN(10, maxValue) : 0;
+      const adding = isAdd ? RGN(10, maxValue) : 0;
       const { x, y, toIdx } = point;
       const { x: x1, y: y1 } = dots[toIdx === undefined ? 0 : toIdx];
       const angle = Math.atan2(y1 - y, x1 - x);
@@ -196,6 +195,7 @@ const neoGenerator = (width: number, height: number): GeneratorData => {
 
   // 0. Find intersection
   const _lines = lines.map((a, i) => { return {from: {x:  a[0], y:  a[1]}, to:   {x: a[2], y: a[3]}, i: i}; });
+  // @ts-ignore
   const detectIntersections = isect.sweep(_lines, {});
   const intersections = detectIntersections.run().map((a, i) => { return {...a, index: i}; });
 

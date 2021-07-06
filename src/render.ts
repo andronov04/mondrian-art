@@ -2,9 +2,9 @@ import { Item, ItemType, RenderConfig } from './types';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import Two from 'two.js';
-const tinycolor  = require('tinycolor2');
-const lodash  = require('lodash');
-const chunk = lodash.chunk;
+import * as tinycolor_ from 'tinycolor2';
+import { chunk } from './utils';
+const tinycolor = tinycolor_;
 
 const render = (api: any, config: RenderConfig): void => {
   const width = config.width || 500;

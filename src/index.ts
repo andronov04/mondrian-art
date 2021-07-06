@@ -5,7 +5,7 @@ import {IMondrian, Item, ItemType, MondrianArtConfig} from './types';
 // @ts-ignore
 import Two from 'two.js';
 import animate from './animate';
-import { RN } from './utils';
+import { RGN } from './utils';
 
 class Mondrian implements IMondrian {
   config;
@@ -50,8 +50,8 @@ class Mondrian implements IMondrian {
     // 3. Snaking if enable
     if (config.mondrian?.enableSnaking) {
       items.filter(a => a.type === ItemType.line).forEach(item => {
-        item.target.translation.x = RN(-8, 8);
-        item.target.translation.y = RN(-8, 8);
+        item.target.translation.x = RGN(-8, 8);
+        item.target.translation.y = RGN(-8, 8);
       });
     }
     // 4. Animate if enable,
@@ -67,5 +67,7 @@ class Mondrian implements IMondrian {
     this.anime?.restart();
   }
 }
-
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+window.Mondrian = Mondrian;
 export default Mondrian;

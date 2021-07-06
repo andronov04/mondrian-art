@@ -39,7 +39,9 @@ dist/**/*
 .size-snapshot.json
 # ignore yarn.lock
 yarn.lock
+/build
 /input
 /output
 /credentials
 examples/mondrian/node_modules
+examples/mondrian/build

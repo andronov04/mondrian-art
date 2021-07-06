@@ -1,6 +1,6 @@
 import anime from 'animejs/lib/anime.es.js';
 import {Item, ItemType} from './types';
-import {RN} from './utils';
+import { RGN, RN } from './utils';
 
 const animate = (items: Item[], snaking = false): any => {
   const animation: any = [];
@@ -8,8 +8,8 @@ const animate = (items: Item[], snaking = false): any => {
   // Animate lines
   items.filter(a => a.type === ItemType.line).forEach(item => {
     const anim = {
-      x: RN(-700, 700),
-      y: RN(-700, 700),
+      x: RGN(-700, 700),
+      y: RGN(-700, 700),
       rotation: 2.5,
       target: item.target
       // ending: 1,
@@ -30,15 +30,15 @@ const animate = (items: Item[], snaking = false): any => {
     item.target.opacity = 0;
   });
 
-  const copy_animation = animation.map(a => {return {...a, target: a.target?.id}});
+  const copy_animation = animation.map(a => { return {...a, target: a.target?.id}; });
 
   const anim = anime({
     targets: animation,
     x: [
-      { value: snaking ? RN(-8, 8) : 0, duration: 1500, delay: 0 }
+      { value: snaking ? RGN(-8, 8) : 0, duration: 1500, delay: 0 }
     ],
     y: [
-      { value: snaking ? RN(-8, 8) : 0, duration: 1500, delay: 0 }
+      { value: snaking ? RGN(-8, 8) : 0, duration: 1500, delay: 0 }
     ],
     // ending: [
     //   { value: 1, duration: 1000, delay: 500 }
@@ -71,7 +71,7 @@ const animate = (items: Item[], snaking = false): any => {
   anim.items = items;
   anim.animation = copy_animation;
 
-  return anim
+  return anim;
 };
 
 export default animate;
