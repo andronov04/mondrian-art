@@ -60,6 +60,7 @@
   "homepage": "https://github.com/andronov04/mondrian-art#readme",
   "dependencies": {
     "animejs": "^3.2.1",
+    "curve-intersection": "^0.0.1",
     "isect": "^3.0.0",
     "tinycolor2": "^1.4.2",
     "two.js": "^0.7.5"

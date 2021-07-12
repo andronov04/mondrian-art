@@ -1,9 +1,9 @@
-import { Item, ItemType, RenderConfig } from './types';
+import { Item, ItemType, PathData, RenderConfig } from './types';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import Two from 'two.js';
 import * as tinycolor_ from 'tinycolor2';
-import { chunk } from './utils';
+import { chunk, RN } from './utils';
 const tinycolor = tinycolor_;
 
 const render = (api: any, config: RenderConfig): void => {
@@ -14,9 +14,9 @@ const render = (api: any, config: RenderConfig): void => {
   const items: Item[] = config.items;
 
   // Set background
-  const bg = api.makeRectangle(width / 2, height / 2, width, height);
-  bg.noStroke();
-  bg.fill = bgColor;
+  // const bg = api.makeRectangle(width / 2, height / 2, width, height);
+  // bg.noStroke();
+  // bg.fill = bgColor;
 
   items
     .filter(a => a.type === ItemType.polygon)
@@ -36,6 +36,28 @@ const render = (api: any, config: RenderConfig): void => {
       item.target = poly;
     });
 
+  // Render path
+  document.querySelectorAll('#path')
+    .forEach(path => {
+      path.remove();
+    })
+  items
+    .filter(a => a.type === ItemType.path)
+    .forEach(item => {
+      if(item.data){
+        let fill = item.fill;
+        if (item.gradient) {
+          fill = api.makeLinearGradient(
+            item.gradient.x1, -item.gradient.y1,
+            item.gradient.x2, item.gradient.y2,
+            new Two.Stop(0, item.gradient.stops[0]),
+            new Two.Stop(1, item.gradient.stops[1])
+          );
+        }
+        renderPath(api.renderer.domElement, item.data, fill);
+      }
+    });
+
   items
     .filter(a => a.type === ItemType.line)
     .forEach((item) => {
@@ -45,6 +67,17 @@ const render = (api: any, config: RenderConfig): void => {
       line.cap = 'square';
       line.join = 'miter';
       item.target = line;
+    });
+
+  // Render curves
+  document.querySelectorAll('#curve')
+    .forEach(curve => {
+      curve.remove();
+    })
+  items
+    .filter(a => a.type === ItemType.curve)
+    .forEach((item, i) => {
+      renderCurve(api.renderer.domElement, item.points);
     });
 
   // ADD Text if enable
@@ -72,3 +105,34 @@ const render = (api: any, config: RenderConfig): void => {
 };
 
 export default render;
+
+const renderCurve = (svg: any, curve: number[]) => {
+  const ns = 'http://www.w3.org/2000/svg';
+  const elem = document.createElementNS(ns, 'path');
+  const d = `M ${curve[0]} ${curve[1]} C ${curve[2]}  ${curve[3]}  ${curve[4]}  ${curve[5]}  ${curve[6]}  ${curve[7]}`;
+
+  elem.setAttribute('d', d);
+  elem.setAttribute('fill', 'none');
+  elem.setAttribute('stroke-width', '1');
+  elem.setAttribute('stroke', 'black');
+  elem.id = 'curve';
+  svg.appendChild(elem);
+}
+
+const renderPath = (svg: any, path: PathData, fill: any) => {
+  const ns = 'http://www.w3.org/2000/svg';
+  const elem = document.createElementNS(ns, 'path');
+  const firstChild = svg.firstChild;
+
+  let d = '';
+  Object.keys(path).forEach(p => {
+    const data = path[p];
+    d += `${data.command} ${data.points.join(' ')} `;
+  });
+
+  elem.setAttribute('d', d);
+  elem.setAttribute('fill', typeof fill === 'string' ? fill : `url(#${fill.id})`);
+  elem.id = 'path';
+  // svg.appendChild(elem);
+  svg.insertBefore(elem, firstChild);
+};

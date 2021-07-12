@@ -12,7 +12,7 @@ function App() {
     width: 500,
     height: 500,
     enableAnimation: {
-      value: true,
+      value: false,
       label: "animation",
     },
   });
@@ -20,7 +20,7 @@ function App() {
     useControls("Mondrian",
     {
       style: {
-        value: "random",
+        value: "neo",
         options: ["random", "neo", "classic"]
       },
       "Palette": folder(
@@ -49,7 +49,7 @@ function App() {
         hint: "Set '0' for random width",
       },
       enableGradient: {
-        value: false,
+        value: true,
         label: 'gradient'
       },
       enableSnaking: {
@@ -81,7 +81,7 @@ function App() {
       container: refInfo.current,
       enableAnimation,
       mondrian: {
-        palette: [color1, color2, 'transparent', color3, 'transparent', 'transparent'],
+        palette: [color1, color2, color3,],// 'transparent', 'transparent'
         style,
         enableGradient,
         enableSnaking,
@@ -140,6 +140,10 @@ function App() {
           userSelect: "none",
         }}
         ref={refInfo} />
+
+      {/*<svg width={500} height={500} viewBox={'0 0 500 500'}>*/}
+      {/*  <path d={'M 327.5 85.5 C 265.4  232.9  265.4  232.9  321  452.2 L 120 120Z'} fill={'black'} stroke={'red'} strokeWidth={1}/>*/}
+      {/*</svg>*/}
     </div>
   );
 }

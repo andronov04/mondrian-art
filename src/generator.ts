@@ -1,10 +1,17 @@
 import {Graph} from './graph';
-import {MondrianArtConfig, GeneratorData, Item, ItemType, TPoint} from './types';
-import { RC, RGN } from './utils';
+import { MondrianArtConfig, GeneratorData, Item, ItemType, TPoint, PathData } from './types';
+import { chunk, RC, RGN } from './utils';
 import {gradient} from './styling';
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { Bezier } from './lib/bezier.js';
 
 import * as isect from 'isect';
 import * as tinycolor_ from 'tinycolor2';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import Two from 'two.js';
 const tinycolor = tinycolor_;
 
 export default (config: MondrianArtConfig): Item[] => {
@@ -14,7 +21,7 @@ export default (config: MondrianArtConfig): Item[] => {
   const lineWidth = config.mondrian?.lineWidth || 1;
   const backgroundColor = config.mondrian?.backgroundColor || '#fff';
   const enableGradient = config.mondrian?.enableGradient || false;
-  const palette = config.mondrian?.palette || ['#0e448c', '#f61710', 'transparent', '#ffd313', 'transparent'];
+  const palette = config.mondrian?.palette || ['#0e448c', '#f61710', '#ffd313']; //'transparent' 'transparent',
 
   if (style === 'random') {
     style = RC(['neo', 'classic']);
@@ -51,6 +58,27 @@ export default (config: MondrianArtConfig): Item[] => {
       points: polygon,
       gradient: enableGradient ? gradient(RC(palette), height) : undefined,
       fill: RC(palette),
+      target: null
+    });
+  });
+  // Style paths
+  data.paths.forEach(path => {
+    items.push({
+      type: ItemType.path,
+      points: [],
+      data: path,
+      gradient: enableGradient ? gradient(RC(palette), height) : undefined,
+      fill: RC(palette),
+      target: null
+    });
+  });
+  // Style curves
+  data.curves.forEach(curve => {
+    items.push({
+      type: ItemType.curve,
+      points: curve,
+      fill:  tinycolor.isReadable(backgroundColor, '#fff') ? '#fff' : '#000',
+      strokeWidth: lineWidth === 'random' ? RGN(0.5, 4) : lineWidth,
       target: null
     });
   });
@@ -171,22 +199,42 @@ const neoGenerator = (width: number, height: number): GeneratorData => {
   dots
     .filter(a => a.toIdx !== undefined)
     .forEach((point, i) => {
-      const adding = isAdd ? RGN(10, maxValue) : 0;
+      const adding = 35//isAdd ? RGN(10, maxValue) : 0;
       const { x, y, toIdx } = point;
       const { x: x1, y: y1 } = dots[toIdx === undefined ? 0 : toIdx];
       const angle = Math.atan2(y1 - y, x1 - x);
-      // const isCur = RN(1, 2) === 1;
+      const isCur = RGN(1, 2) === 1;
 
       lines.push([
         x - (adding * Math.cos(angle)),
         y - (adding * Math.sin(angle)),
-        // ((x - (adding * Math.cos(angle))) + (x1 + (adding * Math.cos(angle)))) / 2 + (isCur ? RN(-50, 50) : 0),
-        // ((y - (adding * Math.sin(angle))) + (y1 + (adding * Math.sin(angle)))) / 2 + (isCur ? RN(-50, 50) : 0),
+        // ((x - (adding * Math.cos(angle))) + (x1 + (adding * Math.cos(angle)))) / 2 + (isCur ? RGN(-50, 50) : 0),
+        // ((y - (adding * Math.sin(angle))) + (y1 + (adding * Math.sin(angle)))) / 2 + (isCur ? RGN(-50, 50) : 0),
 
         x1 + (adding * Math.cos(angle)),
         y1 + (adding * Math.sin(angle))
       ]);
     });
+
+  // Generate curves
+  // TODO Debug
+  const curves: any[] = [];
+  // Generate curves
+  new Array(2).fill(true).forEach((_, z) => {
+    // TODO Check correct
+    const isHorizontal = RGN(1, 2) === 1;
+    const v1x = isHorizontal ? RGN(0, 100) : RGN(0, 500);
+    const v1y = isHorizontal ? RGN(0, 500) : RGN(0, 100);
+    const v1x0 = RGN(200, 300);
+    const v1y0 = RGN(200, 300);
+    const v2x = isHorizontal ? RGN(400, 500) : RGN(0, 500);
+    const v2y = isHorizontal ? RGN(0, 500) : RGN(400, 500);
+
+    const gen_curve = [v1x, v1y, v1x0, v1y0, v1x0, v1y0, v2x, v2y];
+    const curve = new Bezier(...gen_curve);
+
+    curves.push(curve);
+  })
 
   // DETECT-POLYGONS(Ψ)
   // 1 G ← COMPUTE-INDUCED-GRAPH(Ψ)
@@ -198,6 +246,58 @@ const neoGenerator = (width: number, height: number): GeneratorData => {
   // @ts-ignore
   const detectIntersections = isect.sweep(_lines, {});
   const intersections = detectIntersections.run().map((a, i) => { return {...a, index: i}; });
+
+  // Add intersection curves
+  const curve_intersections: any = [];
+
+  // curve-curve intersection
+  curves.forEach((curve, curveIndex1) => {
+    curves.filter(curve2 => curve2 !== curve).forEach((curve2, curveIndex2) => {
+      curve.intersects(curve2).forEach(pair => {
+        const t = pair.split("/").map(v => parseFloat(v));
+        const point =  curve.get(t[0]);
+        curve_intersections.push({
+          index: intersections.length + curve_intersections.length,
+          point: { x: point.x, y: point.y },
+          t: t,
+          segments: [
+            {
+              i: lines.length + curveIndex1,
+            },
+            {
+              i: lines.length + curveIndex2,
+            },
+          ]
+        })
+      });
+    })
+  })
+
+  // curve-line intersection
+  lines.forEach((l, lineIndex) => {
+    const line = { p1: { x: l[0], y: l[1] }, p2: { x: l[2], y: l[3] } };
+    curves.forEach((curve, curveIndex) => {
+      curve.intersects(line).forEach(t => {
+        const point = curve.get(t);
+        curve_intersections.push({
+          index: intersections.length + curve_intersections.length,
+          point: { x: point.x, y: point.y },
+          t: t,
+          segments: [
+            {
+              i: lineIndex,
+            },
+            {
+              i: lines.length + curveIndex,
+            },
+          ]
+        })
+      });
+    })
+  });
+  curve_intersections.forEach(curve => {
+    intersections.push(curve);
+  });
 
   // 1. Create graph
   // COMPUTE- INDUCED-GRAPH, computes the graph G induced by set Φ in O((N+M)logN)
@@ -227,13 +327,14 @@ const neoGenerator = (width: number, height: number): GeneratorData => {
       distance[minId] = r;
     });
   });
+  // console.log('graph', graph);
 
   // 2. Get cycles in an undirected graph
   const bases: number[][] = [];
   const hack = Object.keys(graph.vertices).length + 1;
   Object.keys(graph.vertices).map(a => parseInt(a)).forEach(a => {
     // MIN CYCLE
-    const N = 1000;
+    const N = 10000;
     const graph1: any[] = new Array(N).fill(Boolean).map(a => []);
     const cycles: any[] = new Array(N).fill(Boolean).map(a => []);
 
@@ -273,7 +374,7 @@ const neoGenerator = (width: number, height: number): GeneratorData => {
 
     // store the numbers of cycle
     let cyclenumber = 0;
-    const edges = 23;
+    const edges = 100;
 
     const dfs_cycle = (u, p, color, mark, par) => {
       if (color[u] === 2) {
@@ -306,7 +407,7 @@ const neoGenerator = (width: number, height: number): GeneratorData => {
       color[u] = 2;
     };
 
-    dfs_cycle(index, 0, color, mark, par);
+    dfs_cycle(index, a, color, mark, par);
 
     for (let i = 1; i < edges + 1; i++) {
       if (mark[i] !== 0) {
@@ -325,12 +426,21 @@ const neoGenerator = (width: number, height: number): GeneratorData => {
 
   // 3. Constructs a set of polygon, sort clockwise
   const polygons: number[][] = [];
+  const paths: PathData[][] = [];
   bases.forEach(base => {
-    const points = base.map(a => { return {
-      x: intersections[a].point.x,
-      y: intersections[a].point.y,
-      angle: 0
-    }; });
+    const points = base.map(a => {
+      return {
+        x: intersections[a].point.x,
+        y: intersections[a].point.y,
+        t: intersections[a].t,
+        angle: 0,
+        idx: a,
+        segments: intersections[a].segments.map(a => a.i),
+        isPath: intersections[a].segments.map(a => a.i).flat().some(a => a >= lines.length)
+      };
+    });
+    // Check is not contains curves
+    const isPath = points.some(a => a.isPath);
     const center = points.reduce((acc, { x, y }) => {
       acc.x += x / points.length;
       acc.y += y / points.length;
@@ -338,18 +448,125 @@ const neoGenerator = (width: number, height: number): GeneratorData => {
     }, { x: 0, y: 0 });
 
     // Add an angle property to each point using tan(angle) = y/x
-    const angles = points.map(({ x, y }) => {
-      return { x, y, angle: Math.atan2(y - center.y, x - center.x) * 180 / Math.PI };
+    const angles = points.map(({ x, y, segments, idx, t }) => {
+      return { x, y, idx, t, segments, angle: Math.atan2(y - center.y, x - center.x) * 180 / Math.PI };
     });
 
     // Sort your points by angle
     const pointsSorted = angles.sort((a, b) => a.angle - b.angle);
-    polygons.push(pointsSorted.map(a => [a.x, a.y]).flat());
+
+    if(!isPath) {
+      polygons.push(pointsSorted.map(a => [a.x, a.y]).flat());
+    } else {
+      // TODO render paths
+
+      // RENDER PATH
+      // document.querySelector('#path')?.remove();
+      // const ns = 'http://www.w3.org/2000/svg';
+      // const elem = document.createElementNS(ns, 'path');
+      //
+      // let d = ``;
+      const path: PathData[] = [];
+      pointsSorted.forEach((point, index) => {
+        const next_point = pointsSorted[index >= pointsSorted.length-1 ? 0 : index+1];
+        if(index === 0){
+          // d += `M ${point.x} ${point.y} `;
+          path.push({command: 'M', points: [point.x, point.y]});
+        }
+        if(point.t && next_point.t){
+          const curveIndex = next_point.segments.filter(a => point.segments.includes(a))[0];
+          if(curveIndex >= lines.length){
+
+            const new_curve = curves[curveIndex - lines.length].split(point.t, next_point.t);
+            const crts = new_curve.points.map(a => [a.x, a.y]).flat();
+            if(!crts.some(a => isNaN(a))){
+              // d += `M ${crts[0]} ${crts[1]} `
+              // d += `C ${crts[2]} ${crts[3]} ${crts[4]}  ${crts[5]}  ${crts[6]}  ${crts[7]} `;
+
+              path.push({command: 'M', points: [crts[0], crts[1]]});
+              path.push({command: 'C', points: [crts[2], crts[3], crts[4], crts[5], crts[6], crts[7]]});
+            }
+          } else {
+            // d += `L ${point.x} ${point.y} `
+            path.push({command: 'L', points: [point.x, point.y]});
+          }
+        } else {
+          // d += `L ${next_point.x} ${next_point.y} `;
+          path.push({command: 'L', points: [next_point.x, next_point.y]});
+        }
+      });
+      // console.log('d', path);
+      // TODO check NaN
+      paths.push(path);
+
+      // elem.setAttribute('d', d);
+      // elem.setAttribute('fill', 'red');
+      // elem.setAttribute('stroke-width', 'null');
+      // elem.setAttribute('stroke', 'null');
+      // elem.id = 'path';
+      // // @ts-ignore
+      // window.api.renderer.domElement.appendChild(elem);
+    }
+  });
+
+  // TODO Debug
+  // polygons.forEach(poly => {
+  //   const vert = chunk(poly, 2).map(a => new Two.Vector(a[0], a[1]))
+  //   // @ts-ignore
+  //   const polys = window.api.makePath(vert, true);
+  //   polys.fill = 'red'//tinycolor.random().toHexString();//'blue';
+  //   polys.noStroke();
+  // })
+
+  // intersections.forEach((t, i) => {
+  //   // @ts-ignore
+  //   const circle2 = window.api.makeCircle(t.point.x, t.point.y, 3);
+  //   circle2.fill = 'red';
+  //   circle2.noStroke();
+  //   // @ts-ignore
+  //   const text2 = window.api.makeText(i, t.point.x, t.point.y);
+  //   text2.fill = 'black';
+  //   text2.noStroke();
+  //   t.segments.forEach((seg, v) => {
+  //     // @ts-ignore
+  //     const text2 = window.api.makeText(seg.i, t.point.x + (10 * v+1), t.point.y + 10);
+  //     text2.fill = '#02561c';
+  //     text2.noStroke();
+  //   })
+  // });
+
+
+  // lines.forEach((line, i) => {
+  //   // @ts-ignore
+  //   const text2 = window.api.makeText(i, line[0] + 10, line[1]);
+  //   text2.fill = 'blue';
+  //   text2.noStroke();
+  //   // @ts-ignore
+  //   const text22 = window.api.makeText(i, line[2] + 10, line[3]);
+  //   text22.fill = 'blue';
+  //   text22.noStroke();
+  // })
+  // curves.forEach((line, i) => {
+  //   // @ts-ignore
+  //   const text2 = window.api.makeText(`${i+lines.length}`, line.points[0].x + 10, line.points[0].y);
+  //   text2.fill = 'blue';
+  //   text2.noStroke();
+  //   // @ts-ignore
+  //   const text22 = window.api.makeText(`${i+lines.length}`, line.points[3].x + 10, line.points[3].y);
+  //   text22.fill = 'blue';
+  //   text22.noStroke();
+  // });
+
+
+  const result_curves = curves.map(curve => {
+    return curve.points.map(a => [a.x, a.y]).flat()
   });
 
   return {
-    lines,
-    polygons
+    lines: lines,
+    curves: result_curves,
+    polygons: polygons,
+    paths: paths,
   };
 };
 
@@ -438,6 +655,8 @@ const classicGenerator = (width: number, height: number): GeneratorData => {
 
   return {
     lines: lines,
+    curves: [],
+    paths: [],
     polygons: polygons
   };
 };

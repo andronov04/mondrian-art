@@ -23,6 +23,9 @@ class Mondrian implements IMondrian {
       autostart: true
     });
     this.api.appendTo(this.config.container);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    window.api = this.api;
   }
 
   reconfigure = (config: MondrianArtConfig): void => {
@@ -33,6 +36,7 @@ class Mondrian implements IMondrian {
   }
 
   generate = (): void => {
+    this.api.clear();
     const config = this.config;
     // 1. Generate lines and polygons. Grid.
     const items: Item[] = generator(config);
