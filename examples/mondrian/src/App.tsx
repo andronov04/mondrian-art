@@ -81,7 +81,7 @@ function App() {
       container: refInfo.current,
       enableAnimation,
       mondrian: {
-        palette: [color1, color2, 'transparent', color3, 'transparent', 'transparent'],
+        palette: [color1, color2, color3],
         style,
         enableGradient,
         enableSnaking,

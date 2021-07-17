@@ -9,9 +9,16 @@ export interface ConfigMondrian {
   backgroundColor?: string;
 }
 
+export interface PathData {
+  command: 'M' | 'C' | 'L';
+  points: number[];
+}
+
 export interface GeneratorData {
   lines: number[][];
+  curves: number[][];
   polygons: number[][];
+  paths: PathData[][];
 }
 
 export enum ItemType {
@@ -19,7 +26,9 @@ export enum ItemType {
   polygon,
   line,
   rectangle,
-  text
+  text,
+  curve,
+  path,
 }
 
 export interface ItemGradient {
@@ -32,6 +41,7 @@ export interface ItemGradient {
 
 export interface Item {
   points: number[];
+  data?: PathData;
   type: ItemType;
   fill: string;
   strokeWidth?: number;

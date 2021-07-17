@@ -20,6 +20,21 @@ const animate = (items: Item[], snaking = false): any => {
     item.target.translation.y = anim.y;
   });
 
+  // Animate curves
+  // items.filter(a => a.type === ItemType.curve).forEach(item => {
+  //   const anim = {
+  //     x: RN(-700, 700),
+  //     y: RN(-700, 700),
+  //     rotation: 2.5,
+  //     target: item.target
+  //     // ending: 1,
+  //   };
+  //   animation.push(anim);
+  //   // item.target.ending = anim.ending;
+  //   item.target.translation.x = anim.x;
+  //   item.target.translation.y = anim.y;
+  // });
+
   // Animate polygons
   items.filter(a => a.type === ItemType.polygon).forEach(item => {
     const anim = {

@@ -33,6 +33,7 @@ class Mondrian implements IMondrian {
   }
 
   generate = (): void => {
+    this.api.clear();
     const config = this.config;
     // 1. Generate lines and polygons. Grid.
     const items: Item[] = generator(config);
