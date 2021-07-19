@@ -4,13 +4,11 @@ import {IMondrian, Item, ItemType, MondrianArtConfig} from './types';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import Two from 'two.js';
-import animate from './animate';
 import { RN } from './utils';
 
 class Mondrian implements IMondrian {
   config;
   api;
-  anime;
   constructor(config: MondrianArtConfig) {
     this.config = config;
     const mode = config.mode || 'svg';
@@ -55,17 +53,13 @@ class Mondrian implements IMondrian {
         item.target.translation.y = RN(-8, 8);
       });
     }
-    // 4. Animate if enable,
-    if (config.enableAnimation) {
-      this.anime = animate(items, config.mondrian?.enableSnaking);
-    }
     // Ugly hack for tests
     // @ts-ignore
     this.items = items;
   }
 
   play = (): void => {
-    this.anime?.restart();
+    //
   }
 }
 

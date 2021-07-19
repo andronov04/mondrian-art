@@ -83,7 +83,6 @@ export type TPoint = {
 };
 export interface IMondrian {
   api: any;
-  anime: any;
   config: MondrianArtConfig;
 
   reconfigure: (config: MondrianArtConfig) => void;

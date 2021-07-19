@@ -97,11 +97,11 @@ const render = (api: any, config: RenderConfig): void => {
     });
   }
 
-  // Set border
-  const border = api.makeRectangle(width / 2, height / 2, width, height);
-  border.stroke = tinycolor.isReadable(bgColor, '#fff') ? '#fff' : '#000'; // bgColor;
-  border.linewidth = 5;
-  border.noFill();
+  // // Set border
+  // const border = api.makeRectangle(width / 2, height / 2, width, height);
+  // border.stroke = tinycolor.isReadable(bgColor, '#fff') ? '#fff' : '#000'; // bgColor;
+  // border.linewidth = 5;
+  // border.noFill();
 
   api.bind('update', function() {/**/});
 };
